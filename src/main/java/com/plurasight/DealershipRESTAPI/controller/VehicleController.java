@@ -1,11 +1,10 @@
 package com.plurasight.DealershipRESTAPI.controller;
 
+import com.plurasight.DealershipRESTAPI.dao.DealerShipDataManager;
 import com.plurasight.DealershipRESTAPI.models.Dealership;
 import com.plurasight.DealershipRESTAPI.models.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,10 +12,12 @@ import java.util.List;
 public class VehicleController {
 
     private final Dealership dealership;
+    private final DealerShipDataManager dealerShipDataManager;
 
     @Autowired
-    public VehicleController(Dealership dealership) {
+    public VehicleController(Dealership dealership, DealerShipDataManager dealerShipDataManager) {
         this.dealership = dealership;
+        this.dealerShipDataManager = dealerShipDataManager;
     }
 
     @GetMapping("/vehicles")
@@ -25,19 +26,19 @@ public class VehicleController {
     }
 
     @GetMapping("/vehicles/search")
-    public List<Vehicle> searchVehicles(@RequestParam(required = false) double minPrice,
-                                        @RequestParam(required = false) double maxPrice,
+    public List<Vehicle> searchVehicles(@RequestParam(required = false) Double minPrice,
+                                        @RequestParam(required = false) Double maxPrice,
                                         @RequestParam(required = false) String make,
                                         @RequestParam(required = false) String model,
-                                        @RequestParam(required = false) int minYear,
-                                        @RequestParam(required = false) int maxYear,
+                                        @RequestParam(required = false) Integer minYear,
+                                        @RequestParam(required = false) Integer maxYear,
                                         @RequestParam(required = false) String color,
-                                        @RequestParam(required = false) int minMiles,
-                                        @RequestParam(required = false) int maxMiles,
+                                        @RequestParam(required = false) Integer minMiles,
+                                        @RequestParam(required = false) Integer maxMiles,
                                         @RequestParam(required = false) String vehicleType ) {
 
 
-        if (minPrice != 0 && maxPrice != 0) {
+        if (minPrice != null && maxPrice != null) {
             return this.dealership.getVehicleByPrice(minPrice, maxPrice);
         }
 
@@ -45,7 +46,7 @@ public class VehicleController {
             return this.dealership.getVehicleByMakeMode(make,model);
         }
 
-        if (minYear != 0 && maxYear != 0) {
+        if (minYear != null && maxYear != null) {
             return this.dealership.getVehiclesByYear(minYear, maxYear);
         }
 
@@ -53,7 +54,7 @@ public class VehicleController {
             return this.dealership.getVehicleByColor(color);
         }
 
-        if (minMiles != 0 && maxMiles != 0) {
+        if (minMiles != null && maxMiles != null) {
             return this.dealership.getvehicleByMileage(minMiles, maxMiles);
         }
 
@@ -62,6 +63,13 @@ public class VehicleController {
         }
 
         return List.of();
+    }
+
+    @PostMapping("/vehicles/add")
+    public boolean addVehicle(@RequestBody Vehicle vehicle) {
+        this.dealerShipDataManager.addToInventory(vehicle);
+        this.dealership.addVehicle(vehicle);
+        return true;
     }
 
 }
